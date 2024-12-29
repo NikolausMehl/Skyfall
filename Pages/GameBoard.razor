@@ -11,7 +11,7 @@
 else
 {
     <div class="gameboard-container">
-        <MudGrid>
+        <MudGrid Class="d-flex flex-grow-1">
             <MudItem xs="12" Class="mission-status">
                 <MudPaper Class="pa-3" Elevation="1">
                     <MudText Typo="Typo.h6">
@@ -52,8 +52,8 @@ else
                 </MudPaper>
             </MudItem>
 
-            <MudItem xs="4" sm="3" md="2" Class="agent-list">
-                <MudPaper Class="pa-3" Elevation="1" Style="min-height:60vh;">
+            <MudItem xs="4" sm="3" md="2" Class="agent-list fill-middle">
+                <MudPaper Class="pa-3" Elevation="1" Style="height:100%">
                     <MudList T="Player">
                         @foreach (Player player in Game.Players)
                         {
@@ -79,16 +79,16 @@ else
                 </MudPaper>
             </MudItem>
 
-            <MudItem xs="8" sm="9" md="10" Class="chat-window">
-                <MudPaper Class="pa-3" Elevation="1" Style="height: 60vh; overflow-y:scroll">
+            <MudItem xs="8" sm="9" md="10" Class="chat-window fill-middle">
+                <MudPaper id=@ChatWindowId Class="pa-3" Elevation="1" Style="height: 100%; overflow-y:scroll">
                     @foreach (var message in Game.Chat)
                     {
                         if (message.SenderId == Agent.Id)
                         {
                             <MudPaper Class="mt-1 pa-2" Style="text-align:right">
                                 <MudText Typo="Typo.body1">
-                                    @(message.IsQuestion ? "You asked" : message.IsAnswer ? "You replied to" : "You said to")
-                                    @(message.RecipientId == null ? "" : $" {Game.PlayerName(message.RecipientId)}"):
+                                    @(message.IsQuestion ? "You asked" : message.IsAnswer ? "You replied to" : "You said")
+                                    @(message.RecipientId == null ? "" : $"to {Game.PlayerName(message.RecipientId)}"):
                                     <br />
                                     <b>@message.Text</b>
                                 </MudText>
@@ -96,7 +96,7 @@ else
                         }
                         else
                         {
-                            if (message.RecipientId == null || message.RecipientId == Agent.Id)
+                            if (message.IsQuestion || message.IsAnswer || message.RecipientId == null || message.RecipientId == Agent.Id)
                             {
                                 <MudPaper Class="mt-1 pa-2" Style="text-align:left;">
                                     <MudText Typo="Typo.body1">
@@ -124,34 +124,56 @@ else
                             _ => "Unknown"
                         })
                     </MudText>
-                    @if (Game.Players.Count > 1)
-                    {
-                        @if (Game.IsVotingPhase)
+                    <MudForm @ref="Form">
+                        @if (Game.Players.Count > 1)
                         {
-                            if (Agent.HasVoted)
+                            @if (Game.IsVotingPhase)
                             {
-                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
-                                    Lets see if the others agree that @SelectedPlayer?.Name is the imposter
-                                </MudAlert>
+                                if (Agent.HasVoted)
+                                {
+                                    <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                                        Lets see if the others agree that @SelectedPlayer?.Name is the imposter
+                                    </MudAlert>
+                                }
+                                else if (SelectedPlayer == null)
+                                {
+                                    <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                                        Please tap on the agent you believe to be the imposter
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick=@SubmitVote>Submit my vote</MudButton>
+                                }
                             }
-                            else if (SelectedPlayer == null)
+                            else if (IsMyTurn)
                             {
-                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
-                                    Please tap on the agent you believe to be the imposter
-                                </MudAlert>
+                                if (SelectedPlayer == null)
+                                {
+                                    <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                                        Please tap on the agent you wish to interogate
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudTextField @bind-Value="NewMessage" Lines=3 Class="chat-input"
+                                                  Variant="Variant.Outlined"
+                                                  Adornment="Adornment.End"
+                                                  AdornmentIcon="@Icons.Material.Filled.Chat"
+                                                  Required="true"
+                                                  Placeholder=@($"Ask {SelectedPlayer.Name} your question")
+                                                  OnAdornmentClick=@AskQuestion />
+                                }
                             }
-                            else
+                            else if (CurrentQuestion != null && CurrentQuestion.RecipientId == Agent.Id)
                             {
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick=@SubmitVote>Submit my vote</MudButton>
-                            }
-                        }
-                        else if (IsMyTurn)
-                        {
-                            if (SelectedPlayer == null)
-                            {
-                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
-                                    Please tap on the agent you wish to interogate
-                                </MudAlert>
+                                <MudTextField @bind-Value="NewMessage" Lines=3 Class="chat-input"
+                                              Variant="Variant.Outlined"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.Chat"
+                                              Required="true"
+                                              Placeholder=@($"Answer {Game.PlayerName(CurrentQuestion.SenderId)} who asked \"{CurrentQuestion.Text}\"")
+                                              OnAdornmentClick=@AnswerQuestion />
                             }
                             else
                             {
@@ -159,28 +181,12 @@ else
                                               Variant="Variant.Outlined"
                                               Adornment="Adornment.End"
                                               AdornmentIcon="@Icons.Material.Filled.Chat"
-                                              Placeholder=@($"Ask {SelectedPlayer.Name} your question")
-                                              OnAdornmentClick=@AskQuestion />
+                                              Required="true"
+                                              Placeholder=@(SelectedPlayer==null ? $"Send a message to the everyone" : $"Send a message to {SelectedPlayer.Name}")
+                                              OnAdornmentClick=@SendChatMessage />
                             }
                         }
-                        else if (CurrentQuestion != null && CurrentQuestion.RecipientId == Agent.Id)
-                        {
-                            <MudTextField @bind-Value="NewMessage" Lines=3 Class="chat-input"
-                                          Variant="Variant.Outlined"
-                                          Adornment="Adornment.End"
-                                          AdornmentIcon="@Icons.Material.Filled.Chat"
-                                          Placeholder=@($"Answer {Game.PlayerName(CurrentQuestion.SenderId)} who asked \"{CurrentQuestion.Text}\"")
-                                          OnAdornmentClick=@AnswerQuestion />
-                        }
-                        else
-                        {
-                            <MudTextField @bind-Value="NewMessage" Lines=3 Class="chat-input"
-                                          Variant="Variant.Outlined"
-                                          Adornment="Adornment.End"
-                                          AdornmentIcon="@Icons.Material.Filled.Chat"
-                                          OnAdornmentClick=@SendChatMessage />
-                        }
-                    }
+                    </MudForm>
                 </MudPaper>
             </MudItem>
         </MudGrid>

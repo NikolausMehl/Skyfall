@@ -14,8 +14,10 @@ namespace Skyfall.Pages
         [Parameter]
         public string GameId { get; set; } = default!;
         public bool IsHost => Game.Players[0].Id == Agent.Id;
+        protected string ChatWindowId { get; set; } = $"{nameof(ChatWindowId)}-{Guid.NewGuid()}";
 
         protected Player Agent { get; set; } = default!;
+        protected MudForm Form { get; set; } = default!;
         protected string NewMessage { get; set; } = string.Empty;
         protected string PageTitle { get; set; } = "Mission Briefing";
         protected bool ShowPasscode { get; set; }
@@ -35,24 +37,30 @@ namespace Skyfall.Pages
             GameService.SubmitVote(Game.GameId, SelectedPlayer.Id, Agent.Id);
         }
 
-        public void AskQuestion()
+        public async void AskQuestion()
         {
+            await Form.Validate();
+            if (!Form.IsValid) return;
             if (SelectedPlayer == null) return;
             GameService.Chat(Message.Question(Agent, SelectedPlayer, NewMessage));
             SelectedPlayer = null;
             NewMessage = "";
         }
 
-        public void AnswerQuestion()
+        public async void AnswerQuestion()
         {
+            await Form.Validate();
+            if (!Form.IsValid) return;
             if (CurrentQuestion == null) return;
             GameService.Chat(Message.Answer(Agent, CurrentQuestion.SenderId, NewMessage));
             SelectedPlayer = null;
             NewMessage = "";
         }
 
-        public void SendChatMessage()
+        public async void SendChatMessage()
         {
+            await Form.Validate();
+            if (!Form.IsValid) return;
             GameService.Chat(Message.Send(Agent, NewMessage, SelectedPlayer));
             SelectedPlayer = null;
             NewMessage = "";
@@ -81,6 +89,7 @@ namespace Skyfall.Pages
             if (firstRender)
             {
                 await LoadAgent();
+                await JSRuntime.InvokeVoidAsync("setEnterToSend", "chat-input");
             }
         }
 
@@ -186,6 +195,8 @@ namespace Skyfall.Pages
             }
 
             await InvokeAsync(StateHasChanged);
+            await JSRuntime.InvokeVoidAsync("scrollToBottom", ChatWindowId);
+
         }
     }
 }
