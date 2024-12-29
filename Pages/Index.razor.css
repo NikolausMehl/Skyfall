@@ -1,0 +1,142 @@
+﻿/*Animated Background with blurred lines*/
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(20, 20, 20, 0.9), transparent);
+    background-size: 200% 200%;
+    filter: blur(100px);
+    animation: pulseBackground 10s linear infinite, blurLines 15s linear infinite; /* Combine both */
+    z-index: 1; /* Behind the content */
+}
+
+@keyframes pulseBackground {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+/* Add an animation for the lens flare effect */
+@keyframes blurLines {
+    0% {
+        background-position: 0% 0%;
+    }
+
+    50% {
+        background-position: 100% 100%;
+    }
+
+    100% {
+        background-position: 0% 0%;
+    }
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes revealText {
+    0% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: .5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.teaser-text h2 {
+    font-size: 2.0em;
+    margin-bottom: 10px;
+    animation: fadeInDown 1.5s ease-in-out;
+}
+
+.teaser-text p {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+    animation: fadeInDown 2.0s ease-in-out;
+}
+
+.teaser-text .reveal {
+    animation: revealText 3.0s ease-in-out 2;
+    opacity: 0; /* Initially hidden */
+}
+
+.join-game-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    animation: fadeInUp 2.0s ease-in-out;
+}
+
+    .join-game-button:hover {
+        background-color: #0056b3;
+    }
+
+.action-section {
+    animation: fadeInSection 1s ease-in-out 3s forwards; /* 3s delay */
+    opacity: 0;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.about-section {
+    animation: fadeInSection 1s ease-in-out 5s forwards; /* 5s delay */
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+@keyframes fadeInSection {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

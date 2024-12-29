@@ -1,0 +1,188 @@
+﻿@page "/game/{gameId}"
+@using MudBlazor
+@using Skyfall.Services
+
+<PageTitle>@PageTitle</PageTitle>
+
+@if (Game == null || Agent == null)
+{
+    <div>Loading...</div>
+}
+else
+{
+    <div class="gameboard-container">
+        <MudGrid>
+            <MudItem xs="12" Class="mission-status">
+                <MudPaper Class="pa-3" Elevation="1">
+                    <MudText Typo="Typo.h6">
+                        @(Game.State switch
+                        {
+                            GameStates.Recruting => $"Recruiting for {Game.CurrentCategory.Name} mission",
+                            GameStates.Playing => Game.GetNextMove(),
+                            GameStates.Voting => "Time to identify the imposter",
+                            GameStates.Ended => $"Game Over {Game.GetOutcome()}",
+                            _ => "Unknown"
+                        })
+                    </MudText>
+                    @if (IsHost)
+                    {
+                        <MudButtonGroup Variant="Variant.Outlined" Color="Color.Primary">
+                            <MudButton Disabled=@(!Game.CanJoinGame) OnClick=@CopyJoinLink>Get join link</MudButton>
+                            @if (Game.CanStartGame)
+                            {
+                                <MudButton OnClick=@StartGame>Start game</MudButton>
+                            }
+                            @if (Game.State == GameStates.Voting)
+                            {
+                                <MudButton OnClick=@EndGame>End game</MudButton>
+                            }
+                            @if (Game.State == GameStates.Ended)
+                            {
+                                <MudButton OnClick=@RestartGame>New game</MudButton>
+                            }
+                            @if (Game.CanCancelGame)
+                            {
+                                <MudButton OnClick=@CancelGame>Cancel game</MudButton>
+                            }
+
+                            <MudButton Disabled=@(SelectedPlayer==null) OnClick=@RemovePlayer>Disappear agent</MudButton>
+                            <MudButton Disabled=@(Game.State != GameStates.Playing) OnClick=@SkipTurn>Skip turn</MudButton>
+                        </MudButtonGroup>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="4" sm="3" md="2" Class="agent-list">
+                <MudPaper Class="pa-3" Elevation="1" Style="min-height:60vh;">
+                    <MudList T="Player">
+                        @foreach (Player player in Game.Players)
+                        {
+                            if (Game.State == GameStates.Playing && player.Id == Agent.Id)
+                            {
+                                <MudListItem OnClick=@(()=> ShowPasscode =! ShowPasscode)><b>@player.Name</b></MudListItem>
+                                @if (Agent.AssignedWord?.Length > 0)
+                                {
+                                    <MudPopover Open="@ShowPasscode" Fixed="true" Class="px-4 pt-4">
+                                        <div class="d-flex flex-column">
+                                            <MudText>Your secret passcode is: @Agent.AssignedWord</MudText>
+                                            <MudButton OnClick="@(()=>ShowPasscode = false)" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+                                        </div>
+                                    </MudPopover>
+                                }
+                            }
+                            else
+                            {
+                                <MudListItem OnClick=@(()=>ToggleSelected(player))>@player.Name</MudListItem>
+                            }
+                        }
+                    </MudList>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="8" sm="9" md="10" Class="chat-window">
+                <MudPaper Class="pa-3" Elevation="1" Style="height: 60vh; overflow-y:scroll">
+                    @foreach (var message in Game.Chat)
+                    {
+                        if (message.SenderId == Agent.Id)
+                        {
+                            <MudPaper Class="mt-1 pa-2" Style="text-align:right">
+                                <MudText Typo="Typo.body1">
+                                    @(message.IsQuestion ? "You asked" : message.IsAnswer ? "You replied to" : "You said to")
+                                    @(message.RecipientId == null ? "" : $" {Game.PlayerName(message.RecipientId)}"):
+                                    <br />
+                                    <b>@message.Text</b>
+                                </MudText>
+                            </MudPaper>
+                        }
+                        else
+                        {
+                            if (message.RecipientId == null || message.RecipientId == Agent.Id)
+                            {
+                                <MudPaper Class="mt-1 pa-2" Style="text-align:left;">
+                                    <MudText Typo="Typo.body1">
+                                        @(message.IsQuestion ? $"{Game.PlayerName(message.SenderId)} asked" : message.IsAnswer ? $"{Game.PlayerName(message.SenderId)} replied to" : $"{Game.PlayerName(message.SenderId)} said to")
+                                        @(message.RecipientId == Agent.Id ? "you" : Game.PlayerName(message.RecipientId!)):
+                                        <br />
+                                        <b>@message.Text</b>
+                                    </MudText>
+                                </MudPaper>
+                            }
+                        }
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" Class="instruction-panel">
+                <MudPaper Class="pa-3" Elevation="1">
+                    <MudText Typo="Typo.body1" Align="Align.Center" Class="instruction-text">
+                        @(Game.State switch
+                        {
+                            GameStates.Recruting => "Waiting for players to join",
+                            GameStates.Playing => $"Round {Game.CurrentRound}",
+                            GameStates.Voting => $"Votes: {Game.VoteCount}",
+                            GameStates.Ended => "Game Over",
+                            _ => "Unknown"
+                        })
+                    </MudText>
+                    @if (Game.Players.Count > 1)
+                    {
+                        @if (Game.IsVotingPhase)
+                        {
+                            if (Agent.HasVoted)
+                            {
+                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                                    Lets see if the others agree that @SelectedPlayer?.Name is the imposter
+                                </MudAlert>
+                            }
+                            else if (SelectedPlayer == null)
+                            {
+                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                                    Please tap on the agent you believe to be the imposter
+                                </MudAlert>
+                            }
+                            else
+                            {
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick=@SubmitVote>Submit my vote</MudButton>
+                            }
+                        }
+                        else if (IsMyTurn)
+                        {
+                            if (SelectedPlayer == null)
+                            {
+                                <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                                    Please tap on the agent you wish to interogate
+                                </MudAlert>
+                            }
+                            else
+                            {
+                                <MudTextField @bind-Value="NewMessage" Lines=3 Class="chat-input"
+                                              Variant="Variant.Outlined"
+                                              Adornment="Adornment.End"
+                                              AdornmentIcon="@Icons.Material.Filled.Chat"
+                                              Placeholder=@($"Ask {SelectedPlayer.Name} your question")
+                                              OnAdornmentClick=@AskQuestion />
+                            }
+                        }
+                        else if (CurrentQuestion != null && CurrentQuestion.RecipientId == Agent.Id)
+                        {
+                            <MudTextField @bind-Value="NewMessage" Lines=3 Class="chat-input"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Chat"
+                                          Placeholder=@($"Answer {Game.PlayerName(CurrentQuestion.SenderId)} who asked \"{CurrentQuestion.Text}\"")
+                                          OnAdornmentClick=@AnswerQuestion />
+                        }
+                        else
+                        {
+                            <MudTextField @bind-Value="NewMessage" Lines=3 Class="chat-input"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Chat"
+                                          OnAdornmentClick=@SendChatMessage />
+                        }
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </div>
+}

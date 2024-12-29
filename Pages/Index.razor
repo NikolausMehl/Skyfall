@@ -1,0 +1,31 @@
+﻿@page "/"
+@inject NavigationManager navigation
+
+<PageTitle>Skyfall</PageTitle>
+
+<div class="teaser-text">
+    <h2>A SHADOW AMONG US.</h2>
+    <p>TRUST NO ONE.</p>
+    <p class="reveal">WHO IS THE IMPOSTER?</p>
+</div>
+
+<div class="action-section">
+    <MudButton Class="my-2 join-game-button" OnClick=@StartGame>Start a new Mission</MudButton>
+    <MudButton Class="my-2 join-game-button" OnClick=@JoinGame>Join an existing Mission</MudButton>
+</div>
+
+<div class="about-section">
+    <About />
+</div>
+
+@code {
+    private void JoinGame()
+    {
+        navigation.NavigateTo("/join");
+    }
+
+    private void StartGame()
+    {
+        navigation.NavigateTo("/start");
+    }
+}

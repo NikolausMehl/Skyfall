@@ -1,0 +1,26 @@
+﻿@page "/join/{gameId}"
+<PageTitle>Join Mission</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Gutters="true" Class="ma-4">
+    <MudPaper Width="100%" Class="pa-5">
+        <div class="intro-section">
+            <h1>Join Mission</h1>
+            <p>
+                Agent, your mission should you choose to accept is is codename @Game.GameId. <br />
+                Before proceeding, confirm the following mission parameters.
+            </p>
+        </div>
+
+        <MudForm @ref="form" Model="@CodeName" @onsubmit="JoinGame">
+            <MudTextField @bind-Value="CodeName" Label="Agent Code Name" Variant="Variant.Outlined" Required="true" />
+            <MudTextField @bind-Value="Game.CurrentCategory.Name" Label="Mission Category" Variant="Variant.Outlined" ReadOnly="true" />
+            <MudNumericField @bind-Value="Game.NumberOfRounds" Label="Number Of Rounds" Variant="Variant.Outlined" ReadOnly="true" />
+            <div class="button-container mt-4">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">
+                    Proceed to the Mission Briefing
+                </MudButton>
+            </div>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+

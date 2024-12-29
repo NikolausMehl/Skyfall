@@ -1,0 +1,31 @@
+﻿@page "/start"
+<PageTitle>New Mission</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Gutters="true" Class="ma-4">
+    <MudPaper Width="100%" Class="pa-5">
+        <div class="intro-section">
+            <h1>Initiate New Operation</h1>
+            <p>
+                Agent, your mission parameters are being prepared. <br />
+                Before proceeding, please enter the following mission parameters.
+            </p>
+        </div>
+
+        <MudForm @ref="form" Model="@CodeName" @onsubmit="StartGame">
+            <MudTextField @bind-Value="CodeName" Label="Agent Code Name" Variant="Variant.Outlined" Required="true" />
+            <MudSelect @bind-Value="Category" T="string" Label="Mission Category" Variant="Variant.Outlined" Required="true" Style="text-align:left">
+                @foreach (Category category in Categories)
+                {
+                    <MudSelectItem Value="@category.Name">@category.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudNumericField @bind-Value="Rounds" Label="Number Of Rounds" Variant="Variant.Outlined" Required="true" Min="1" />
+            <div class="button-container mt-4">
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary">
+                    Proceed to the Mission Briefing
+                </MudButton>
+            </div>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
