@@ -20,7 +20,7 @@ namespace Skyfall.Pages
         protected MudForm Form { get; set; } = default!;
         protected string NewMessage { get; set; } = string.Empty;
         protected string PageTitle { get; set; } = "Mission Briefing";
-        protected bool ShowPasscode { get; set; }
+
         protected bool IsMyTurn => Game.State == GameStates.Playing && Game.CurrentPlayer.Id == Agent.Id && Game.Answerer.Length == 0;
 
         public Message? CurrentQuestion { get; private set; }
@@ -66,6 +66,14 @@ namespace Skyfall.Pages
             NewMessage = "";
         }
 
+        public void ShowPasscode()
+        {
+            if (Agent.AssignedWord?.Length > 0)
+            {
+                snackbar.Add($"Your secret code is {Agent.AssignedWord}");
+            }
+        }
+
         public void RemovePlayer()
         {
             if (SelectedPlayer == null) return;
@@ -89,7 +97,6 @@ namespace Skyfall.Pages
             if (firstRender)
             {
                 await LoadAgent();
-                await JSRuntime.InvokeVoidAsync("setEnterToSend", "chat-input");
             }
         }
 
@@ -165,7 +172,7 @@ namespace Skyfall.Pages
             switch (e.Event)
             {
                 case GameEvents.StartGame:
-                    snackbar.Add($"Your secret code is {Agent.AssignedWord}");
+                    ShowPasscode();
                     break;
 
                 case GameEvents.PlayerRemoved:

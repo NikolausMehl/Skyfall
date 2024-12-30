@@ -25,6 +25,15 @@ html, body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 97vh;
+}
+
+.shrink-top, .shrink-bottom {
+    flex: 0 0 auto;
+}
+
+.fill-middle {
+    flex: 1 1 auto;
 }
 
 .skyfall-logo h1 {
