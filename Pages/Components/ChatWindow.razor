@@ -1,0 +1,32 @@
+﻿<MudPaper id=@ChatWindowId Class="pa-3" Elevation="1" Style="height: 100%; overflow-y:scroll">
+    @foreach (var message in Game.Chat)
+    {
+        if (message.SenderId == Agent.Id)
+        {
+            <MudPaper Class="mt-1 pa-2" Style="text-align:right">
+                <MudText Typo="Typo.body1">
+                    @(message.IsQuestion ? "You asked" : message.IsAnswer ? "You replied to" : "You said")
+                    @(message.RecipientId == null ? "" : $"to {Game.PlayerName(message.RecipientId)}"):
+                    <br />
+                    <b>@message.Text</b>
+                </MudText>
+            </MudPaper>
+        }
+        else
+        {
+            if (message.IsQuestion || message.IsAnswer || message.RecipientId == null || message.RecipientId == Agent.Id)
+            {
+                <MudPaper Class="mt-1 pa-2" Style="text-align:left;">
+                    <MudText Typo="Typo.body1">
+                        @(message.IsQuestion ? $"{Game.PlayerName(message.SenderId)} asked" : message.IsAnswer ? $"{Game.PlayerName(message.SenderId)} replied to" : $"{Game.PlayerName(message.SenderId)} said to")
+                        @(message.RecipientId == Agent.Id ? "you" : Game.PlayerName(message.RecipientId!)):
+                        <br />
+                        <b>@message.Text</b>
+                    </MudText>
+                </MudPaper>
+            }
+        }
+    }
+</MudPaper>
+
+

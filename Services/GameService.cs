@@ -3,7 +3,6 @@
 public interface IGameService
 {
     event GameEventHandler? GameEvent;
-
     bool IsDevelopment { get; }
 
     void CancelGame(string gameId);
@@ -11,7 +10,6 @@ public interface IGameService
     Player CreateGame(string userName, string categoryName, int rounds);
     Player CreateGame(Player player, string category, int rounds);
     void EndGame(string gameId);
-
     Game GetGame(string gameId);
     bool HasGame(string gameId);
     Player JoinGame(string gameId, string userName);
@@ -20,7 +18,6 @@ public interface IGameService
     void NextTurn(string gameId);
     void RemovePlayer(Player player);
     void RestartGame(string gameId);
-
     bool StartGame(string gameId);
     void SubmitVote(string gameId, string votedPlayerId, string playerId);
 }
@@ -64,7 +61,7 @@ public class GameService(AppState appState, ICategoryService categoryService) : 
             var action = message.RecipientId == null
            ? $"{game.PlayerName(message.SenderId)} send a message"
            : $"{game.PlayerName(message.SenderId)} said to {game.PlayerName(message.RecipientId)}";
-            GameEvent?.Invoke(game, new(GameEvents.SendMessage, message.SenderId, action));
+            GameEvent?.Invoke(game, new(GameEvents.SentMessage, message.SenderId, action));
         }
     }
 
@@ -126,7 +123,11 @@ public class GameService(AppState appState, ICategoryService categoryService) : 
     public Player JoinGame(string gameId, Player player)
     {
         var game = GetGame(gameId);
-        if (game.Players.Any(p => p.Id == player.Id && p.GameId == game.GameId)) return player;
+        if (game.Players.Any(p => p.Id == player.Id && p.GameId == game.GameId))
+        {
+            GameEvent?.Invoke(game, new(GameEvents.JoinGame, player.Id, $"{player.Name} rejoined the game"));
+            return player;
+        }
         var newPlayer = player with
         {
             GameId = game.GameId,

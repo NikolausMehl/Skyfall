@@ -62,20 +62,8 @@ namespace Skyfall.Pages
             }
             catch { }
 
-            if (Agent == null)
-            {
-                return;
-            }
-
-            if (Agent.GameId == Game.GameId)
-            {
-                Navigation.NavigateTo($"/game/{Agent.GameId}");
-            }
-            else
-            {
-                CodeName = Agent.Name;
-                await InvokeAsync(StateHasChanged);
-            }
+            CodeName = Agent?.Name ?? "";
+            await InvokeAsync(StateHasChanged);
         }
     }
 }

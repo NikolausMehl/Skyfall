@@ -1,0 +1,22 @@
+﻿<MudButtonGroup Variant="Variant.Outlined" Color="Color.Primary">
+    <MudButton Disabled=@(!Game.CanJoinGame) OnClick=@CopyJoinLink>Get join link</MudButton>
+    @if (Game.CanStartGame)
+    {
+        <MudButton OnClick=@StartGame>Start game</MudButton>
+    }
+    @if (Game.State == GameStates.Voting)
+    {
+        <MudButton OnClick=@EndGame>End game</MudButton>
+    }
+    @if (Game.State == GameStates.Ended)
+    {
+        <MudButton OnClick=@RestartGame>New game</MudButton>
+    }
+    @if (Game.CanCancelGame)
+    {
+        <MudButton OnClick=@CancelGame>Cancel game</MudButton>
+    }
+
+    <MudButton Disabled=@(Model.SelectedPlayer==null) OnClick=@RemovePlayer>Disappear agent</MudButton>
+    <MudButton Disabled=@(Game.State != GameStates.Playing) OnClick=@SkipTurn>Skip turn</MudButton>
+</MudButtonGroup>

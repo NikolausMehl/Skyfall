@@ -1,0 +1,44 @@
+﻿@if (DisplayMode == DisplayModes.List)
+{
+    <MudItem sm="3" lg="2" Class="agent-list">
+        <MudPaper Class="pa-3" Elevation="1" Style="height:100%">
+            <MudList T="Player">
+                @foreach (Player player in Game.Players)
+                {
+                    if (player.Id == Agent.Id)
+                    {
+                        <MudListItem OnClick=@ShowPasscode><b>@player.Name</b></MudListItem>
+                    }
+                    else
+                    {
+                        <MudListItem OnClick=@(()=>ToggleSelected(player))>@player.Name</MudListItem>
+                    }
+                }
+            </MudList>
+        </MudPaper>
+    </MudItem>
+}
+else if (DisplayMode == DisplayModes.Bar)
+{
+    <MudButtonGroup Variant="Variant.Outlined" Class="mb-2">
+        @foreach (Player player in Game.Players)
+        {
+            if (player.Id == Agent.Id)
+            {
+                <MudButton Size="Size.Small" OnClick=@ShowPasscode>
+                    <MudText Typo="Typo.caption">
+                        <b>@player.Name</b>
+                    </MudText>
+                </MudButton>
+            }
+            else
+            {
+                <MudButton Size="Size.Small" OnClick=@(()=>ToggleSelected(player))>
+                    <MudText Typo="Typo.caption">
+                        @player.Name
+                    </MudText>
+                </MudButton>
+            }
+        }
+    </MudButtonGroup>
+}

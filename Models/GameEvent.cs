@@ -4,7 +4,7 @@ public enum GameEvents
 {
     CreateGame,
     JoinGame,
-    SendMessage,
+    SentMessage,
     StartGame,
     AskedQuestion,
     Voted,

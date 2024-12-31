@@ -7,7 +7,7 @@ window.scrollToBottom = (elementId) => {
         const element = document.getElementById(elementId)
         if (!element) return
         const lastChild = element.children[element.children.length - 1]
-        lastChild.scrollIntoView()
+        lastChild?.scrollIntoView()
     } catch (ex) {
         console.log(ex)
     }

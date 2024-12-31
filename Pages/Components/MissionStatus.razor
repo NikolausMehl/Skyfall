@@ -1,0 +1,20 @@
+﻿<div class="mission-status">
+    <MudHidden Breakpoint="Breakpoint.Xs">
+        <MudPaper Class="pa-3" Elevation="1">
+            <MudText Typo="Typo.h6">@Status</MudText>
+            @if (IsHost)
+            {
+                <HostBar />
+            }
+        </MudPaper>
+    </MudHidden>
+
+    <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+        <MudText Typo="Typo.caption">@Status</MudText>
+        @if (IsHost)
+        {
+            <HostBar />
+        }
+    </MudHidden>
+
+</div>

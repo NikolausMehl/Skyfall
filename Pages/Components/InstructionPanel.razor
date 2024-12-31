@@ -1,0 +1,77 @@
+﻿<div class="instruction-panel">
+    <MudPaper Class="pa-3" Elevation="1">
+
+        <MudText Typo="Typo.body1" Align="Align.Center" Class="instruction-text">
+            <MudText Typo="Typo.subtitle2">@Instructions</MudText>
+            <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                <MissionStatus />
+                <PlayerList DisplayMode="PlayerList.DisplayModes.Bar" />
+            </MudHidden>
+        </MudText>
+        <MudForm @ref="Form">
+            @if (Game.Players.Count > 1)
+            {
+                @if (Game.IsVotingPhase)
+                {
+                    if (Agent.HasVoted)
+                    {
+                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                            Lets see if the others agree that @SelectedPlayer?.Name is the imposter
+                        </MudAlert>
+                    }
+                    else if (SelectedPlayer == null)
+                    {
+                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                            Please tap on the agent you believe to be the imposter
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick=@SubmitVote>Submit my vote</MudButton>
+                    }
+                }
+                else if (IsMyTurn)
+                {
+                    if (SelectedPlayer == null)
+                    {
+                        <MudAlert Severity="Severity.Info" ContentAlignment="HorizontalAlignment.Center">
+                            Please tap on the agent you wish to interogate
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudTextField @bind-Value="NewMessage" Class="chat-input"
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.Chat"
+                                      Required="true"
+                                      Placeholder=@($"Ask {SelectedPlayer.Name} your question")
+                                      OnAdornmentClick=@AskQuestion />
+                    }
+                }
+                else if (CurrentQuestion != null && CurrentQuestion.RecipientId == Agent.Id)
+                {
+                    <MudTextField @bind-Value="NewMessage" Class="chat-input"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Chat"
+                                  Required="true"
+                                  Placeholder=@($"Answer {Game.PlayerName(CurrentQuestion.SenderId)} who asked \"{CurrentQuestion.Text}\"")
+                                  OnAdornmentClick=@AnswerQuestion />
+                }
+                else
+                {
+                    <MudTextField @bind-Value="NewMessage" Class="chat-input"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Chat"
+                                  Required="true"
+                                  Placeholder=@(SelectedPlayer==null ? $"Send a message to the everyone" : $"Send a message to {SelectedPlayer.Name}")
+                                  OnAdornmentClick=@SendChatMessage />
+                }
+            }
+        </MudForm>
+    </MudPaper>
+</div>
+
+
